@@ -9,5 +9,5 @@ lazy val root = (project in file("."))
     libraryDependencies += "org.typelevel" %% "cats-core" % "1.6.0"
   )
 
- scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-Ypartial-unification")
-
+scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-Ypartial-unification")
+mainClass in (Compile, run) := Some("com.perhac.blog.Main")
