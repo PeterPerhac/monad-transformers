@@ -6,6 +6,26 @@ We will explore different ways they can be used to make your code neater and hel
 
 Understanding monads and type classes is not a prerequisite for this session (though having a rough idea what they are will help).
 
+## Monads don't compose
+
+Monad `F` knows how to flatten `F[F[A]]` into a `F[A]`.
+Monad `G` knows how to flatten `G[G[A]]` into a `G[A]`.
+
+Having a monad `F` and monad `G`, can we compose them?
+
+No, not generically. Monads don't compose.
+
+By composing monad `F` and monad `G` we won't magically get a monad that knows how to flatten `F[G[F[G[A]]]]` into an `F[G[A]]` because there's always an `F` or a `G` in the way. Monad `F` can't know what `G` will be (and vice-versa), so monads can't be composed _generically_.
+
+However, in some special cases, certain monads _can_ be composed in a specific way. This is where monad transformers come into play. We can't have MTs for all monads, but for some it's possible: e.g. `OptionT`, `EitherT`, `ReaderT`, `WriterT`.
+
+Not all monads have a respective monad transformer.
+
+In some cases, though it is possible to write specialised monads (yes, a monad transformer is in itself a monad) that offer the effects of both the base monad and the wrapping monad.
+
+For example, the `OptionT[F[_], A]` monad transformer must implement all the functionality of the Option monad, _and_ delegate to the underlying base monad (`F`).
+
+------
 
 ## What's in this repository
 
@@ -41,25 +61,37 @@ Understanding monads and type classes is not a prerequisite for this session (th
 
 -----
 
-## Monads don't compose
+## Basics of working with Monad transformers
 
-Monad `F` knows how to flatten `F[F[A]]` into a `F[A]`.
-Monad `G` knows how to flatten `G[G[A]]` into a `G[A]`.
+- if it ends with **T**, it's likely a Monad Transformer (`OptionT`, `EitherT`, `ReaderT`, `WriterT`, etc.)
+- whatever comes _before_ the **T**, the MT will _feel like_. That means, if it's `OptionT`, working with it should be almost no different to working with just a regular `Option` monad. You can do with an `OptionT` practically all the things you would do with an `Option`, like `.fold` or `getOrElse` or `orElse`. There are easily discoverable convenience methods such as `getOrElseF` and `orElseF` if your argument comes wrapped in `F`. The `F` monad is almost transparent when working with monad transformers.  
+- when you no longer need a monad transformer, simply `fold` it, or `getOrElse` it or `apply` it, etc.
+- Monad Transformer flattens (un-nests) nested monads, so instead of `F[G[A]]` we can work with `GT[F, A]`. If you absolutely must re-nest the MT, the nested value is always readily accessible as the `value` property of the monad transformer. `val fo = Future.successful(Some(42)); OptionT(fo).value === fo`
 
-Having a monad `F` and monad `G`, can we compose them?
+### Map all the things!
 
-No, not generically. Monads don't compose.
+|                 | combinator              | mapping function shape   |                 |
+|-----------------|-------------------------|--------------------------|-----------------|
+| `OptionT[F, A]` | `map`                   | `A => B`                 | `OptionT[F, B]` |
+| `OptionT[F, A]` | `flatMap`               | `A => OptionT[F, B]`     | `OptionT[F, B]` |
+| `OptionT[F, A]` | `flatMapF`              | `A => F[Option[B]]`      | `OptionT[F, B]` |
+| `OptionT[F, A]` | `semiflatMap`           | `A => F[B]`              | `OptionT[F, B]` |
+| `OptionT[F, A]` | `subflatMap`            | `A => Option[B]`         | `OptionT[F, B]` |
 
-By composing monad `F` and monad `G` we won't magically get a monad that knows how to flatten `F[G[F[G[A]]]]` into an `F[G[A]]` because there's always an `F` or a `G` in the way. Monad `F` can't know what `G` will be (and vice-versa), so monads can't be composed _generically_.
 
-However, in some special cases, certain monads _can_ be composed in a specific way. This is where monad transformers come into play. We can't have MTs for all monads, but for some it's possible: e.g. `OptionT`, `EitherT`, `ReaderT`, `WriterT`.
+### Lift all the things! (OptionT)
 
-Not all monads have a respective monad transformer.
+| Starting from       | lift            | example                             | long form (without MT)                 |
+|---------------------|-----------------|-------------------------------------|----------------------------------------|
+|                     | `none[F, A]`    | `OptionT.none[Future, Int]`         | `Future.successful(Option.empty[Int])` |
+| `A`                 | `some[F]`       | `OptionT.some[Future](42)`          | `Future.successful(Some(42))`          |
+| `F[A]`              | `liftF`         | `OptionT.liftF(future42)`           | `future42.map(Option.apply)`           |
+| `Option[A]`         | `fromOption[F]` | `OptionT.fromOption[Future](opt42)` | `Future.successful(opt42)`             |
+| `Future[Option[A]]` | `apply`         | `OptionT(futureOpt42)`              | `futureOpt42`                          |
 
-In some cases, though it is possible to write specialised monads (yes, a monad transformer is in itself a monad) that offer the effects of both the base monad and the wrapping monad.
+### Lift all the things! (EitherT)
 
-For example, the `OptionT[F[_], A]` monad transformer must implement all the functionality of the Option monad, _and_ delegate to the underlying base monad (`F`).
-
-------
+- `apply`, **`cond`**, `fromEither`, `fromOption`, `fromOptionF`, `left`, `leftT`, `liftF`, `pure`, `right`, `rightT`
+- converting from `OptionT`: `.toRight(A)`, `.toLeft(B)` 
 
 ![cats-typeclass-hierarchy](res/cats-typeclass-hierarchy.png)
