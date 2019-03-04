@@ -4,9 +4,10 @@ import cats.data.OptionT
 import cats.implicits._
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 
-object HelloSemiflatMap {
+object HelloSemiflatMap extends App {
 
   import AllRepositories._
 
@@ -20,7 +21,7 @@ object HelloSemiflatMap {
     def action: OptionT[Future, LoyaltyProfile] =
       OptionT
         .fromOption[Future](optUserId)
-        .flatMapF(findUserById)
+        .flatMap(findUserById)
         .semiflatMap(user => findUserProfileByUserId(user.id))
         .subflatMap(_.loyaltyProfileId)
         .flatMapF(findLoyaltyProfileById)
@@ -31,7 +32,7 @@ object HelloSemiflatMap {
     def doesNotWork: OptionT[Future, SimpleUserProfile] =
       OptionT
         .fromOption[Future](optUserId)
-        .flatMapF(findUserById)
+        .flatMap(findUserById)
         .semiflatMap(user => findUserProfileByUserId(user.id))
         .subflatMap(_.loyaltyProfileId)
         .flatMapF(findLoyaltyProfileById)
@@ -46,4 +47,6 @@ object HelloSemiflatMap {
     action.fold("Operation could not be performed")(_ => "Loyalty Profile updated")
 
   }
+
+  println(Await.result(apply("1"), Duration.Inf))
 }

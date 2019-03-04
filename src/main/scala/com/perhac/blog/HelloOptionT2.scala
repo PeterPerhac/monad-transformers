@@ -20,19 +20,20 @@ object HelloOptionT2 {
       for {
         userId           <- optUserId                                 |> liftOption
         _                <- "this is not important"                   |> lift
-        user             <- findUserById(userId)                      |> liftFutureOption
+        user             <- findUserById(userId)
         userProfile      <- findUserProfileByUserId(user.id)          |> liftFuture
         loyaltyProfileId <- userProfile.loyaltyProfileId              |> liftOption
         loyaltyProfile   <- findLoyaltyProfileById(loyaltyProfileId)  |> liftFutureOption
         _                <- updateLoyaltyProfile(loyaltyProfile)      |> liftFuture
-      } yield SimpleUserProfile(
-        name = user.name, 
-        age = userProfile.age, 
-        pointsBalance = loyaltyProfile.pointsBalance
-      )
+      } yield 
+        SimpleUserProfile(
+          name = user.name, 
+          age = userProfile.age, 
+          pointsBalance = loyaltyProfile.pointsBalance
+        )
       // format: on
 
-    action.fold(s"Loyalty profile for user ID ${args.headOption.getOrElse("<not specified>")} not found") { u =>
+    action.fold(s"User summary for user ID ${args.headOption.getOrElse("<not specified>")} not found") { u =>
       s"${u.name}, ${u.age} with a balance of ${u.pointsBalance} loyalty points."
     }
 

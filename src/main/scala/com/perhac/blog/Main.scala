@@ -1,40 +1,55 @@
 package com.perhac.blog
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
+import cats.implicits._
+
+import scala.concurrent.Await.result
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import scala.concurrent.duration.Duration.Inf
 
 object Main extends App {
 
-  println(Await.result(HelloOptionT("1"), Duration.Inf))
-  println(Await.result(HelloOptionT("2"), Duration.Inf))
-  println(Await.result(HelloOptionT("3"), Duration.Inf))
-  println(Await.result(HelloOptionT("7"), Duration.Inf))
-  println(Await.result(HelloOptionT("something"), Duration.Inf))
-  println(Await.result(HelloOptionT(), Duration.Inf))
-  println(Await.result(HelloOptionT("1", "2", "3"), Duration.Inf))
+  val separator = Future.successful("\n---\n")
 
-  println()
-  println("---")
-  println()
-
-  println(Await.result(HelloOptionT2("1"), Duration.Inf))
-  println(Await.result(HelloOptionT2("2"), Duration.Inf))
-  println(Await.result(HelloOptionT2("3"), Duration.Inf))
-  println(Await.result(HelloOptionT2("7"), Duration.Inf))
-  println(Await.result(HelloOptionT2("something"), Duration.Inf))
-  println(Await.result(HelloOptionT2(), Duration.Inf))
-  println(Await.result(HelloOptionT2("1", "2", "3"), Duration.Inf))
-
-  println()
-  println("---")
-  println()
-
-  println(Await.result(HelloFutureOptions("1"), Duration.Inf))
-  println(Await.result(HelloFutureOptions("2"), Duration.Inf))
-  println(Await.result(HelloFutureOptions("3"), Duration.Inf))
-  println(Await.result(HelloFutureOptions("7"), Duration.Inf))
-  println(Await.result(HelloFutureOptions("something"), Duration.Inf))
-  println(Await.result(HelloFutureOptions(), Duration.Inf))
-  println(Await.result(HelloFutureOptions("1", "2", "3"), Duration.Inf))
+  result(
+    List(
+      HelloOptionT("1"),
+      HelloOptionT("2"),
+      HelloOptionT("3"),
+      HelloOptionT("4"),
+      HelloOptionT("7"),
+      HelloOptionT("something"),
+      HelloOptionT(),
+      HelloOptionT("1", "2", "3"),
+      separator,
+      HelloOptionT2("1"),
+      HelloOptionT2("2"),
+      HelloOptionT2("3"),
+      HelloOptionT2("4"),
+      HelloOptionT2("7"),
+      HelloOptionT2("something"),
+      HelloOptionT2(),
+      HelloOptionT2("1", "2", "3"),
+      separator,
+      HelloFutureOptions("1"),
+      HelloFutureOptions("2"),
+      HelloFutureOptions("3"),
+      HelloFutureOptions("4"),
+      HelloFutureOptions("7"),
+      HelloFutureOptions("something"),
+      HelloFutureOptions(),
+      HelloFutureOptions("1", "2", "3"),
+      separator,
+      HelloEitherT("1"),
+      HelloEitherT("2"),
+      HelloEitherT("3"),
+      HelloEitherT("4"),
+      HelloEitherT("7"),
+      HelloEitherT("something"),
+      HelloEitherT(),
+      HelloEitherT("1", "2", "3")
+    ).sequence,
+    Inf
+  ).foreach(println)
 
 }

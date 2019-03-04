@@ -8,7 +8,7 @@ abstract class BaseSpec extends WordSpec with ScalaFutures with Matchers with Lo
 
   implicit val patience: PatienceConfig =
     PatienceConfig(
-      timeout = scaled(Span(250, Millis)),
+      timeout = scaled(Span(500, Millis)),
       interval = scaled(Span(20, Millis))
     )
 }

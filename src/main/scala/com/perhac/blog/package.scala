@@ -12,6 +12,8 @@ package object blog {
   type MyProgram = Seq[String] => Future[String]
 
   val stringToIntOption: String => Option[Int] = s => s.parseIntOption
+  val stringToIntEither: String => Either[String, Int] = s =>
+    s.parseInt.left.map(e => s"Failed to parse provided input: $e")
 
   object PixieDust {
 

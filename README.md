@@ -7,6 +7,38 @@ We will explore different ways they can be used to make your code neater and hel
 Understanding monads and type classes is not a prerequisite for this session (though having a rough idea what they are will help).
 
 
+## What's in this repository
+
+ - `package.scala`
+   - various plumbing
+ - `repositories.scala`
+   - a bunch of "repositories" with hard-coded data in the form of `Map`s
+   - the repositories provide a variety of return types to play with: i.e. `OptionT[F, T]`, `Future[Option[T]]`, `Future[T]` (and `Future[Unit]`)  
+ - `models.scala`
+   - a bunch of `case class`es for demonstration
+ - `Main` object
+   - scratch-sheet-like app for convenience. Main is the default app that runs on `sbt run`
+ - **`HelloFutureOptions`**
+   - demonstrates working with our repositories *without* cats and monad transformers.
+   - the OptionT returned from one of the repository methods is *re-nested* via the `value` property of OptionT 
+   - this app shows how we *could* write apps if we're hell-bent on avoiding the convenience of libraries such as **cats** 
+ - **`HelloOptionT`**
+   - demonstrates working with `OptionT` monad transformer. Lifting is done via utility methods on `OptionT` companion object: `apply`, `fromOption`, `some`, `liftF`
+   - below the line are example usages of other methods available on `OptionT`, such as `flatMapF`, `semiflatMap`, `subflatMap`
+ - **`HelloOptionT2`**
+   - same as above, but lifting is done via an `implicit class` that introduces the *thrush operator* 
+   - below the line are example usages of other methods available on `OptionT`, such as `flatMapF`, `semiflatMap`, `subflatMap`
+ - **`HelloSemiflatMap`**
+   - working with monad transformers outside of a for-comprehension. Linking a bunch of `flatMap`, `semiflatMap`, `subflatMap`, `flatMapF`
+   - an example usage of `flatTap` (nothing to do with monad transformers, just wanted to show it)
+   - pros - certain operations can be achieved without resorting to for-comprehensions, cons - most useful applications can't make use of this approach
+ - **`HelloEitherT`**
+   - Better error reporting with `EitherT` monad transformer. Slightly more complex type signatures, more explicit typing, more verbose lifting
+   - below the line are examples of converting between `OptionT` and `EitherT`
+ - **Tests**
+   - testing the behaviour of the apps, making sure `HelloFutureOptions`, `HelloOptionT`, `HelloOptionT2`, behave the same
+   - demonstrate better error reporting achieved by using `EitherT`
+    
 -----
 
 ## Monads don't compose

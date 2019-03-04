@@ -18,7 +18,7 @@ object HelloOptionT {
       for {
         userId           <- OptionT.fromOption[Future](optUserId)
         _                <- OptionT.some[Future]("this is not important")
-        user             <- OptionT(findUserById(userId))
+        user             <- findUserById(userId)
         userProfile      <- OptionT.liftF(findUserProfileByUserId(user.id))
         loyaltyProfileId <- OptionT.fromOption[Future](userProfile.loyaltyProfileId)
         loyaltyProfile   <- OptionT(findLoyaltyProfileById(loyaltyProfileId))
@@ -30,7 +30,7 @@ object HelloOptionT {
           pointsBalance = loyaltyProfile.pointsBalance
         )
 
-    action.fold(s"Loyalty profile for user ID ${args.headOption.getOrElse("<not specified>")} not found") { u =>
+    action.fold(s"User summary for user ID ${args.headOption.getOrElse("<not specified>")} not found") { u =>
       s"${u.name}, ${u.age} with a balance of ${u.pointsBalance} loyalty points."
     }
 

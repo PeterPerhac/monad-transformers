@@ -11,9 +11,9 @@ object HelloFutureOptions {
 
     val optUserId: Option[Int] = args.headOption.flatMap(stringToIntOption)
 
-    def action: Future[Option[SimpleUserProfile]] = Future.successful(optUserId).flatMap {
-      case Some(userId) =>
-        findUserById(userId).flatMap {
+    def action: Future[Option[SimpleUserProfile]] =
+      optUserId.fold(Future.successful(Option.empty[SimpleUserProfile])) { userId =>
+        findUserById(userId).value.flatMap {
           case Some(user) =>
             findUserProfileByUserId(user.id).flatMap { userProfile =>
               userProfile.loyaltyProfileId.fold(Future.successful(Option.empty[SimpleUserProfile])) {
@@ -33,11 +33,10 @@ object HelloFutureOptions {
             }
           case None => Future.successful(None)
         }
-      case None => Future.successful(None)
-    }
+      }
 
     action.map { optProfile =>
-      optProfile.fold(s"Loyalty profile for user ID ${args.headOption.getOrElse("<not specified>")} not found") { u =>
+      optProfile.fold(s"User summary for user ID ${args.headOption.getOrElse("<not specified>")} not found") { u =>
         s"${u.name}, ${u.age} with a balance of ${u.pointsBalance} loyalty points."
       }
     }
@@ -45,23 +44,17 @@ object HelloFutureOptions {
 
   /* --------------------------------------------------- */
 
+  def findLoyaltyProfile(userProfile: UserProfile): Future[Option[LoyaltyProfile]] =
+    userProfile.loyaltyProfileId.fold(Future.successful(Option.empty[LoyaltyProfile]))(findLoyaltyProfileById)
+
   def updateLoyaltyProfile(profile: LoyaltyProfile): Future[Unit] =
     saveLoyaltyProfile(profile.copy(notes = Some("✔")))
-
-  def findLoyaltyProfile(userProfile: UserProfile): Future[Option[LoyaltyProfile]] =
-    Future.successful(userProfile.loyaltyProfileId).flatMap {
-      case Some(profileId) => findLoyaltyProfileById(profileId)
-      case None            => Future.successful(None)
-    }
 
   def touch(profileId: Int): Future[Option[Unit]] =
     findLoyaltyProfileById(profileId).flatMap {
       case Some(loyaltyProfile) => updateLoyaltyProfile(loyaltyProfile).map(_ => Some(()))
       case None                 => Future.successful(None)
     }
-
-  def loyaltyProfileId(userId: Int): Future[Option[Int]] =
-    findUserProfileByUserId(userId).map(_.loyaltyProfileId)
 
   def loyaltyProfileNotes(profileId: Int): Future[Option[String]] =
     findLoyaltyProfileById(profileId).map {
