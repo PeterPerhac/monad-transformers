@@ -13,20 +13,20 @@ Understanding monads and type classes is not a prerequisite for this session (th
    - various plumbing
  - `repositories.scala`
    - a bunch of "repositories" with hard-coded data in the form of `Map`s
-   - the repositories provide a variety of return types to play with: i.e. `OptionT[F, T]`, `Future[Option[T]]`, `Future[T]` (and `Future[Unit]`)  
+   - the repositories provide a variety of return types to play with: i.e. `OptionT[F, T]`, `Future[Option[T]]`, `Future[T]` (and `Future[Unit]`)
  - `models.scala`
    - a bunch of `case class`es for demonstration
  - `Main` object
    - scratch-sheet-like app for convenience. Main is the default app that runs on `sbt run`
  - **`HelloFutureOptions`**
    - demonstrates working with our repositories *without* cats and monad transformers.
-   - the OptionT returned from one of the repository methods is *re-nested* via the `value` property of OptionT 
-   - this app shows how we *could* write apps if we're hell-bent on avoiding the convenience of libraries such as **cats** 
+   - the `OptionT` returned from one of the repository methods is *re-nested* via the `value` property of `OptionT`
+   - this app shows how we *could* write apps if we're hell-bent on avoiding the convenience of libraries such as **cats**
  - **`HelloOptionT`**
    - demonstrates working with `OptionT` monad transformer. Lifting is done via utility methods on `OptionT` companion object: `apply`, `fromOption`, `some`, `liftF`
    - below the line are example usages of other methods available on `OptionT`, such as `flatMapF`, `semiflatMap`, `subflatMap`
  - **`HelloOptionT2`**
-   - same as above, but lifting is done via an `implicit class` that introduces the *thrush operator* 
+   - same as above, but lifting is done via an `implicit class` that introduces the *thrush operator*
    - below the line are example usages of other methods available on `OptionT`, such as `flatMapF`, `semiflatMap`, `subflatMap`
  - **`HelloSemiflatMap`**
    - working with monad transformers outside of a for-comprehension. Linking a bunch of `flatMap`, `semiflatMap`, `subflatMap`, `flatMapF`
@@ -38,7 +38,7 @@ Understanding monads and type classes is not a prerequisite for this session (th
  - **Tests**
    - testing the behaviour of the apps, making sure `HelloFutureOptions`, `HelloOptionT`, `HelloOptionT2`, behave the same
    - demonstrate better error reporting achieved by using `EitherT`
-    
+
 -----
 
 ## Monads don't compose
