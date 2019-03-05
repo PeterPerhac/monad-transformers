@@ -64,7 +64,7 @@ For example, the `OptionT[F[_], A]` monad transformer must implement all the fun
 ## Basics of working with Monad transformers
 
 - if it ends with **T**, it's likely a Monad Transformer (`OptionT`, `EitherT`, `ReaderT`, `WriterT`, etc.)
-- whatever comes _before_ the **T**, the MT will _feel like_. That means, if it's `OptionT`, working with it should be almost no different to working with just a regular `Option` monad. You can do with an `OptionT` practically all the things you would do with an `Option`, like `.fold` or `getOrElse` or `orElse`. There are easily discoverable convenience methods such as `getOrElseF` and `orElseF` if your argument comes wrapped in `F`. The `F` monad is almost transparent when working with monad transformers.  
+- whatever comes _before_ the **T**, the MT will _feel like_. That means, if it's `OptionT`, working with it should be almost no different to working with just a regular `Option` monad. You can do with an `OptionT` practically all the things you would do with an `Option`, like `.fold` or `getOrElse` or `orElse`. There are easily discoverable convenience methods such as `getOrElseF` and `orElseF` if your argument comes wrapped in `F`. The `F` monad is almost transparent when working with monad transformers.
 - when you no longer need a monad transformer, simply `fold` it, or `getOrElse` it or `apply` it, etc.
 - Monad Transformer flattens (un-nests) nested monads, so instead of `F[G[A]]` we can work with `GT[F, A]`. If you absolutely must re-nest the MT, the nested value is always readily accessible as the `value` property of the monad transformer. `val fo = Future.successful(Some(42)); OptionT(fo).value === fo`
 
@@ -92,6 +92,21 @@ For example, the `OptionT[F[_], A]` monad transformer must implement all the fun
 ### Lift all the things! (EitherT)
 
 - `apply`, **`cond`**, `fromEither`, `fromOption`, `fromOptionF`, `left`, `leftT`, `liftF`, `pure`, `right`, `rightT`
-- converting from `OptionT`: `.toRight(A)`, `.toLeft(B)` 
+- converting from `OptionT`: `.toRight(A)`, `.toLeft(B)`
+
+**A note on `EitherT`s**
+`EitherT[F[_], A, B]` is invariant in all three type parameters. 
+If you are modeling potential error cases as a sealed trait `E` you'll find it awkward dealing with `EitherT[F[_], E, B]`.
+Although your error `E1 extends E`, there's no "is-a" relationship between `EitherT[F[_], E1, B]` and `EitherT[F[_], E, B]`. 
+You'll find yourself constantly explicitly typing your more specialised errors as their super type `E`, or using helper methods that help the types align. 
+Whichever way you approach it, it ends up getting rather messy quickly. 
+The other problem with `EitherTs` is you end up with practically two channels of failure: the Either could be a Left, but also, the Future could be a failed future.
+There's an alternative approach (and an interesting discussion below) in this blog post https://typelevel.org/blog/2018/08/25/http4s-error-handling-mtl.html
+I've put together a working example of this approach here: https://github.com/PeterPerhac/errorhandling-with-optics-http4s
+ 
+
+-------
+
+just for reference:
 
 ![cats-typeclass-hierarchy](res/cats-typeclass-hierarchy.png)
