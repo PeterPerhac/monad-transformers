@@ -12,7 +12,8 @@ trait UserRepository {
     User(id = 1, name = "Peter", email = "peter@perhac.com"),
     User(id = 2, name = "Alice", email = "alice@email.com"),
     User(id = 3, name = "Thomas", email = "thomas@email.com"),
-    User(id = 4, name = "Jane", email = "jane@email.com")
+    User(id = 4, name = "Jane", email = "jane@email.com"),
+    User(id = 5, name = "fail", email = "fail@email.com")
   )
 
   def findUserById(id: Int): OptionT[Future, User] =
